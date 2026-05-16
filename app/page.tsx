@@ -9,10 +9,12 @@ export default function Home() {
   const [linking, setLinking] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+useEffect(() => {
     fetchData()
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+    }
   }, [])
-
   async function fetchData() {
     setLoading(true)
     const res = await fetch("/api/me")
