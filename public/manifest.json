@@ -1,0 +1,16 @@
+{
+  "name": "Gainquest",
+  "short_name": "Gainquest",
+  "description": "Turn your workouts into legend",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#534AB7",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
