@@ -3,8 +3,8 @@ import { supabase } from "@/lib/supabase"
 import { cookies } from "next/headers"
 
 export async function GET() {
-  const cookieStore = cookies()
-  const stravaId = cookieStore.get("strava_id")?.value
+  const cookieStore = await cookies()
+const stravaId = cookieStore.get("strava_id")?.value
 
   if (!stravaId) return NextResponse.json({ error: "Not logged in" }, { status: 401 })
 
