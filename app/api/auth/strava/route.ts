@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  const params = new URLSearchParams({
-    client_id: process.env.STRAVA_CLIENT_ID!,
-    redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback`,
-    response_type: "code",
-    approval_prompt: "auto",
-    scope: "read,activity:read_all",
-  })
-  return NextResponse.redirect(
-    `https://www.strava.com/oauth/authorize?${params}`
-  )
+  const url = new URL("https://www.strava.com/oauth/authorize")
+  url.searchParams.set("client_id", process.env.STRAVA_CLIENT_ID!)
+  url.searchParams.set("redirect_uri", `${process.env.NEXTAUTH_URL}/api/auth/callback`)
+  url.searchParams.set("response_type", "code")
+  url.searchParams.set("approval_prompt", "auto")
+  url.searchParams.set("scope", "read,activity:read_all")
+  
+  return NextResponse.redirect(url.toString())
 }
