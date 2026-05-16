@@ -1,3 +1,237 @@
+New-Item -ItemType Directory -Force -Path "app\api\auth\strava"
+New-Item -ItemType Directory -Force -Path "app\api\auth\callback"
+
+Set-Content -Path "app\api\auth\strava\route.ts" -Value @'
+import { NextResponse } from "next/server"
+
+export async function GET() {
+  const params = new URLSearchParams({
+    client_id: process.env.STRAVA_CLIENT_ID!,
+    redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback`,
+    response_type: "code",
+    approval_prompt: "auto",
+    scope: "read,activity:read_all",
+  })
+  return NextResponse.redirect(
+    `https://www.strava.com/oauth/authorize?${params}`
+  )
+}
+'@
+
+Set-Content -Path "app\api\auth\callback\route.ts" -Value @'
+import { NextResponse } from "next/server"
+import { supabase } from "@/lib/supabase"
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const code = searchParams.get("code")
+
+  if (!code) return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?error=no_code`)
+
+  const tokenRes = await fetch("https://www.strava.com/oauth/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: process.env.STRAVA_CLIENT_ID,
+      client_secret: process.env.STRAVA_CLIENT_SECRET,
+      code,
+      grant_type: "authorization_code",
+    }),
+  })
+
+  const tokens = await tokenRes.json()
+  if (tokens.errors) return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?error=token_failed`)
+
+  const athlete = tokens.athlete
+  const stravaId = athlete.id
+
+  const { data: existing } = await supabase
+    .from("users")
+    .select("*")
+    .eq("strava_id", stravaId)
+    .single()
+
+  if (!existing) {
+    await supabase.from("users").insert({
+      strava_id: stravaId,
+      name: `${athlete.firstname} ${athlete.lastname}`,
+      email: athlete.email ?? `${stravaId}@strava.com`,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expires_at,
+      character_name: `${athlete.firstname} the Spellblade`,
+      character_class: "Spellblade",
+      avatar: "🧙",
+    })
+  } else {
+    await supabase.from("users").update({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expires_at,
+    }).eq("strava_id", stravaId)
+  }
+
+  const response = NextResponse.redirect(process.env.NEXTAUTH_URL!)
+  response.cookies.set("strava_id", String(stravaId), {
+    httpOnly: true,
+    secure: true,
+    maxAge: 60 * 60 * 24 * 30,
+  })
+
+  return response
+}
+'@
+
+Set-Content -Path "app\api\me\route.ts" -Value @'
+import { NextResponse } from "next/server"
+import { supabase } from "@/lib/supabase"
+import { cookies } from "next/headers"
+
+export async function GET() {
+  const cookieStore = cookies()
+  const stravaId = cookieStore.get("strava_id")?.value
+
+  if (!stravaId) return NextResponse.json({ error: "Not logged in" }, { status: 401 })
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("*")
+    .eq("strava_id", stravaId)
+    .single()
+
+  const { data: activities } = await supabase
+    .from("activities")
+    .select("*")
+    .eq("user_strava_id", stravaId)
+    .order("date", { ascending: false })
+    .limit(10)
+
+  let partner = null
+  if (user?.partner_strava_id) {
+    const { data: partnerData } = await supabase
+      .from("users")
+      .select("*")
+      .eq("strava_id", user.partner_strava_id)
+      .single()
+    partner = partnerData
+  }
+
+  return NextResponse.json({ user, activities, partner })
+}
+'@
+
+Set-Content -Path "app\api\sync\route.ts" -Value @'
+import { NextResponse } from "next/server"
+import { supabase } from "@/lib/supabase"
+import { calculateXP, xpToLevel } from "@/lib/xp"
+import { cookies } from "next/headers"
+
+export async function POST() {
+  const cookieStore = cookies()
+  const stravaId = cookieStore.get("strava_id")?.value
+
+  if (!stravaId) return NextResponse.json({ error: "Not logged in" }, { status: 401 })
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("*")
+    .eq("strava_id", stravaId)
+    .single()
+
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
+
+  let accessToken = user.access_token
+  if (Date.now() / 1000 > user.expires_at) {
+    const res = await fetch("https://www.strava.com/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: process.env.STRAVA_CLIENT_ID,
+        client_secret: process.env.STRAVA_CLIENT_SECRET,
+        refresh_token: user.refresh_token,
+        grant_type: "refresh_token",
+      }),
+    })
+    const tokens = await res.json()
+    accessToken = tokens.access_token
+    await supabase.from("users").update({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expires_at,
+    }).eq("strava_id", stravaId)
+  }
+
+  const activitiesRes = await fetch(
+    "https://www.strava.com/api/v3/athlete/activities?per_page=10",
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  )
+  const activities = await activitiesRes.json()
+
+  let totalXP = user.xp
+  let totalStr = user.str
+  let totalEnd = user.end_stat
+  let totalPwr = user.pwr
+
+  for (const act of activities) {
+    const { data: existing } = await supabase
+      .from("activities")
+      .select("id")
+      .eq("strava_id", act.id)
+      .single()
+
+    if (!existing) {
+      const { xp, str, endStat, pwr } = calculateXP(act.type, act.distance, act.moving_time)
+      await supabase.from("activities").insert({
+        strava_id: act.id,
+        user_strava_id: stravaId,
+        name: act.name,
+        type: act.type,
+        distance: act.distance,
+        duration: act.moving_time,
+        xp_earned: xp,
+        date: act.start_date,
+      })
+      totalXP += xp
+      totalStr += str
+      totalEnd += endStat
+      totalPwr += pwr
+    }
+  }
+
+  const newLevel = xpToLevel(totalXP)
+  await supabase.from("users").update({
+    xp: totalXP,
+    level: newLevel,
+    str: totalStr,
+    end_stat: totalEnd,
+    pwr: totalPwr,
+  }).eq("strava_id", stravaId)
+
+  return NextResponse.json({ success: true, xp: totalXP, level: newLevel })
+}
+'@
+
+Set-Content -Path "app\layout.tsx" -Value @'
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Gainquest",
+  description: "Turn your workouts into legend",
+  manifest: "/manifest.json",
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body style={{ margin: 0, padding: 0 }}>
+        {children}
+      </body>
+    </html>
+  )
+}
+'@
+
+Set-Content -Path "app\page.tsx" -Value @'
 "use client"
 import { useEffect, useState } from "react"
 
@@ -308,3 +542,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   navIcon: { fontSize: 22 },
   navLabel: { fontSize: 10 },
 }
+'@
+
+Write-Host "✅ All files updated successfully!" -ForegroundColor Green

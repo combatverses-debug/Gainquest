@@ -1,42 +1,46 @@
-import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { calculateXP, xpToLevel } from '@/lib/xp'
+import { NextResponse } from "next/server"
+import { supabase } from "@/lib/supabase"
+import { calculateXP, xpToLevel } from "@/lib/xp"
+import { cookies } from "next/headers"
 
-export async function POST(req: Request) {
-  const { stravaId } = await req.json()
+export async function POST() {
+  const cookieStore = cookies()
+  const stravaId = cookieStore.get("strava_id")?.value
+
+  if (!stravaId) return NextResponse.json({ error: "Not logged in" }, { status: 401 })
 
   const { data: user } = await supabase
-    .from('users')
-    .select('*')
-    .eq('strava_id', stravaId)
+    .from("users")
+    .select("*")
+    .eq("strava_id", stravaId)
     .single()
 
-  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
 
   let accessToken = user.access_token
   if (Date.now() / 1000 > user.expires_at) {
-    const res = await fetch('https://www.strava.com/oauth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("https://www.strava.com/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         client_id: process.env.STRAVA_CLIENT_ID,
         client_secret: process.env.STRAVA_CLIENT_SECRET,
         refresh_token: user.refresh_token,
-        grant_type: 'refresh_token',
+        grant_type: "refresh_token",
       }),
     })
     const tokens = await res.json()
     accessToken = tokens.access_token
-    await supabase.from('users').update({
+    await supabase.from("users").update({
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expires_at: tokens.expires_at,
-    }).eq('strava_id', stravaId)
+    }).eq("strava_id", stravaId)
   }
 
   const activitiesRes = await fetch(
-    'https://www.strava.com/api/v3/athlete/activities?per_page=10',
- { headers: { Authorization: `Bearer ${accessToken}` } }
+    "https://www.strava.com/api/v3/athlete/activities?per_page=10",
+    { headers: { Authorization: `Bearer ${accessToken}` } }
   )
   const activities = await activitiesRes.json()
 
@@ -47,14 +51,14 @@ export async function POST(req: Request) {
 
   for (const act of activities) {
     const { data: existing } = await supabase
-      .from('activities')
-      .select('id')
-      .eq('strava_id', act.id)
+      .from("activities")
+      .select("id")
+      .eq("strava_id", act.id)
       .single()
 
     if (!existing) {
       const { xp, str, endStat, pwr } = calculateXP(act.type, act.distance, act.moving_time)
-      await supabase.from('activities').insert({
+      await supabase.from("activities").insert({
         strava_id: act.id,
         user_strava_id: stravaId,
         name: act.name,
@@ -72,13 +76,13 @@ export async function POST(req: Request) {
   }
 
   const newLevel = xpToLevel(totalXP)
-  await supabase.from('users').update({
+  await supabase.from("users").update({
     xp: totalXP,
     level: newLevel,
     str: totalStr,
     end_stat: totalEnd,
     pwr: totalPwr,
-  }).eq('strava_id', stravaId)
+  }).eq("strava_id", stravaId)
 
   return NextResponse.json({ success: true, xp: totalXP, level: newLevel })
 }
