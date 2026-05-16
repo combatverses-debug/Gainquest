@@ -1,5 +1,4 @@
 import NextAuth from 'next-auth'
-import { supabase } from '@/lib/supabase'
 
 const handler = NextAuth({
   providers: [
@@ -15,7 +14,14 @@ const handler = NextAuth({
           approval_prompt: 'auto',
         },
       },
-      token: 'https://www.strava.com/oauth/token',
+      token: {
+        url: 'https://www.strava.com/oauth/token',
+        params: {
+          client_id: process.env.STRAVA_CLIENT_ID,
+          client_secret: process.env.STRAVA_CLIENT_SECRET,
+          grant_type: 'authorization_code',
+        },
+      },
       userinfo: 'https://www.strava.com/api/v3/athlete',
       clientId: process.env.STRAVA_CLIENT_ID,
       clientSecret: process.env.STRAVA_CLIENT_SECRET,
@@ -23,7 +29,7 @@ const handler = NextAuth({
         return {
           id: profile.id.toString(),
           name: `${profile.firstname} ${profile.lastname}`,
-          email: profile.email,
+          email: profile.email ?? `${profile.id}@strava.com`,
           image: profile.profile,
         }
       },
@@ -31,7 +37,8 @@ const handler = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }: any) {
-      if (account.provider === 'strava') {
+      try {
+        const { supabase } = await import('@/lib/supabase')
         const stravaId = parseInt(user.id)
         const { data: existing } = await supabase
           .from('users')
@@ -58,8 +65,11 @@ const handler = NextAuth({
             expires_at: account.expires_at,
           }).eq('strava_id', stravaId)
         }
+        return true
+      } catch (e) {
+        console.error('SignIn error:', e)
+        return true
       }
-      return true
     },
     async session({ session, token }: any) {
       session.stravaId = token.sub
