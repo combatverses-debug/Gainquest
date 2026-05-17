@@ -54,49 +54,25 @@ export async function POST(req: Request) {
   const maxHR = age ? 220 - age : 180
   const fatBurnZoneLow = Math.round(maxHR * 0.6)
   const fatBurnZoneHigh = Math.round(maxHR * 0.7)
+  const durationWeeks = parseInt(duration.replace(" weeks", ""))
 
-  const prompt = `You are Oracle, an elite AI fitness coach inside a fantasy RPG fitness app called Gainquest. You speak with wisdom, authority and a hint of mysticism. You are creating a personalised training program.
+  const prompt = `You are Oracle, an elite AI fitness coach inside a fantasy RPG fitness app called Gainquest. You speak with wisdom, authority and a hint of mysticism.
 
 User stats:
 - Goal: ${goal}
 - Training days per week: ${days}
 - Fitness level: ${level}
-- Program duration: ${duration}
+- Program duration: ${durationWeeks} weeks
 - Age: ${age}, Height: ${height}cm, Weight: ${weight}kg, Gender: ${gender}
-- BMI: ${bmi}
-- Max heart rate: ${maxHR}bpm
-- Fat burn zone: ${fatBurnZoneLow}-${fatBurnZoneHigh}bpm
+- BMI: ${bmi}, Max HR: ${maxHR}bpm, Fat burn zone: ${fatBurnZoneLow}-${fatBurnZoneHigh}bpm
 - Upcoming event: ${event || "none"}
-- Recent Strava data: avg run distance ${avgRunKm}km, avg speed ${avgRunPace}km/h, weekly run volume ~${Math.round(weeklyRunKm)}km
-- Recent gym sessions: ${recentGym.length} in last 20 activities
+- Avg run: ${avgRunKm}km at ${avgRunPace}km/h, weekly volume: ${Math.round(weeklyRunKm)}km
+- Gym sessions: ${recentGym.length} in last 20 activities
 
-Generate a complete training program as a JSON object with this exact structure:
-{
-  "campaignName": "Epic fantasy campaign name (e.g. The Shadow Road Campaign)",
-  "campaignSubtitle": "Short epic subtitle",
-  "oracleIntro": "Oracle's opening message to the user, 2-3 sentences, mystical but motivating, referencing their specific stats",
-  "weeks": [
-    {
-      "weekNumber": 1,
-      "title": "Epic RPG week title",
-      "sessions": [
-        {
-          "day": "Monday",
-          "type": "Run|Gym|Walk|Rest",
-          "description": "Specific session description e.g. Easy 5km run at conversational pace",
-          "targetKm": 5,
-          "targetMins": 35,
-          "xpReward": 200
-        }
-      ],
-      "weeklyTarget": "Summary of week target",
-      "oracleAdvice": "Oracle's specific advice for this week referencing their data",
-      "totalXP": 800
-    }
-  ]
-}
+Return ONLY a valid JSON object, no markdown, no backticks, no explanation:
+{"campaignName":"string","campaignSubtitle":"string","oracleIntro":"string","weeks":[{"weekNumber":1,"title":"string","sessions":[{"day":"string","type":"Run|Gym|Walk|Rest","description":"string","targetKm":0,"targetMins":0,"xpReward":0}],"weeklyTarget":"string","oracleAdvice":"string","totalXP":0}]}
 
-Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic and progressive based on their Strava data. Only respond with the JSON object, no other text.`
+Generate all ${durationWeeks} weeks. Be concise. No extra text.`
 
   const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -107,24 +83,25 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 4000,
+      max_tokens: 8000,
       messages: [{ role: "user", content: prompt }],
     }),
   })
 
   const claudeData = await claudeRes.json()
   const text = claudeData.content?.[0]?.text || ""
-  console.log("Claude response:", text.substring(0, 500))
 
   let program
   try {
-    const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    const clean = jsonMatch ? jsonMatch[0] : text
     program = JSON.parse(clean)
   } catch (e) {
+    console.error("Parse error:", text.substring(0, 300))
     return NextResponse.json({ error: "Failed to parse program" }, { status: 500 })
   }
 
-  const { data: savedProgram } = await supabase
+  const { data: savedProgram, error: insertError } = await supabase
     .from("programs")
     .insert({
       user_strava_id: stravaId,
@@ -133,7 +110,7 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
       oracle_intro: program.oracleIntro,
       goal,
       days_per_week: parseInt(days),
-      duration_weeks: parseInt(duration),
+      duration_weeks: durationWeeks,
       fitness_level: level,
       age: parseInt(age),
       height: parseInt(height),
@@ -147,6 +124,11 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
     })
     .select()
     .single()
+
+  if (insertError || !savedProgram) {
+    console.error("Supabase insert failed:", insertError)
+    return NextResponse.json({ error: "Failed to save program", details: insertError }, { status: 500 })
+  }
 
   return NextResponse.json({ program: savedProgram })
 }
