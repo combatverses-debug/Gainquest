@@ -28,7 +28,8 @@ export default function ProgramPage() {
     setSelections((prev: any) => ({ ...prev, [key]: val }))
   }
 
-  const generateProgram = async () => {
+ const generateProgram = async () => {
+    console.log("forge clicked", selections)
     setStep("generating")
     setGenStep(1)
     setTimeout(() => setGenStep(2), 1200)
