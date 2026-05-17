@@ -118,7 +118,7 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
 
   let program
   try {
-    const clean = text.replace(/```json|```/g, "").trim()
+    const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
     program = JSON.parse(clean)
   } catch (e) {
     return NextResponse.json({ error: "Failed to parse program" }, { status: 500 })
