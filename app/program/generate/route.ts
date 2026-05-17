@@ -119,8 +119,9 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
   try {
     const clean = text.replace(/```json|```/g, "").trim()
     program = JSON.parse(clean)
-  } catch (e) {
-    return NextResponse.json({ error: "Failed to parse program" }, { status: 500 })
+  } } catch (e) {
+    console.error("Parse error:", e, "Raw text:", text)
+    return NextResponse.json({ error: "Failed to parse program", raw: text }, { status: 500 })
   }
 
   const { data: savedProgram } = await supabase
@@ -146,6 +147,9 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
     })
     .select()
     .single()
-
+if (insertError || !savedProgram) {
+    console.error("Supabase insert failed:", insertError)
+    return NextResponse.json({ error: "Failed to save program", details: insertError }, { status: 500 })
+  }
   return NextResponse.json({ program: savedProgram })
 }
