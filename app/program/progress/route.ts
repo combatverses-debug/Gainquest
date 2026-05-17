@@ -35,4 +35,15 @@ export async function GET() {
       .eq("user_strava_id", stravaId)
       .gte("date", weekStart.toISOString())
 
-    const weekKm = (acti
+    const weekKm = (activities || []).reduce((s: number, a: any) => s + (a.distance || 0) / 1000, 0)
+    const weekSessions = (activities || []).length
+
+    return NextResponse.json({
+      program: { ...program, current_week: currentWeek },
+      weekKm: Math.round(weekKm * 10) / 10,
+      weekSessions,
+    })
+  } catch (e) {
+    return NextResponse.json({ program: null })
+  }
+}
