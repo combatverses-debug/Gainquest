@@ -114,6 +114,7 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
 
   const claudeData = await claudeRes.json()
   const text = claudeData.content?.[0]?.text || ""
+  console.log("Claude response:", text.substring(0, 500))
 
   let program
   try {
