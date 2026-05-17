@@ -117,39 +117,13 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
 
   let program
   try {
-    const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+    let clean = text
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      clean = jsonMatch[0]
+    }
     program = JSON.parse(clean)
-  }  catch (e) {
-    console.error("Parse error:", e, "Raw text:", text)
-    return NextResponse.json({ error: "Failed to parse program", raw: text }, { status: 500 })
+  } catch (e) {
+    console.error("Parse error:", e, "Raw text:", text.substring(0, 200))
+    return NextResponse.json({ error: "Failed to parse program" }, { status: 500 })
   }
-
-  const { data: savedProgram, error: insertError } = await supabase
-    .from("programs")
-    .insert({
-      user_strava_id: stravaId,
-      campaign_name: program.campaignName,
-      campaign_subtitle: program.campaignSubtitle,
-      oracle_intro: program.oracleIntro,
-      goal,
-      days_per_week: parseInt(days),
-      duration_weeks: parseInt(duration),
-      fitness_level: level,
-      age: parseInt(age),
-      height: parseInt(height),
-      weight: parseInt(weight),
-      gender,
-      event: event || null,
-      weeks: program.weeks,
-      current_week: 1,
-      started_at: new Date().toISOString(),
-      active: true,
-    })
-    .select()
-    .single()
-if (insertError || !savedProgram) {
-    console.error("Supabase insert failed:", insertError)
-    return NextResponse.json({ error: "Failed to save program", details: insertError }, { status: 500 })
-  }
-  return NextResponse.json({ program: savedProgram })
-}
