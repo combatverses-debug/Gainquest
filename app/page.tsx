@@ -102,6 +102,15 @@ useEffect(() => {
     <div style={{fontSize: 20}}>→</div>
   </div>
 </div>
+<div style={{...styles.heroCard, marginTop: 0, marginBottom: 12, cursor: 'pointer', background: '#12101a'}} onClick={() => window.location.href = '/program'}>
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+    <div>
+      <div style={{fontSize: 14, fontWeight: 600, color: '#e8d5ff'}}>🔮 Oracle Training Program</div>
+      <div style={{fontSize: 11, color: '#6b5a8a', marginTop: 2}}>AI personalised campaign based on your data</div>
+    </div>
+    <div style={{fontSize: 20}}>→</div>
+  </div>
+</div>
             {partner && (
               <div style={styles.vsCard}>
                 <div style={styles.vsPlayer}>
