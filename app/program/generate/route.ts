@@ -124,7 +124,7 @@ Generate all ${duration.replace(" weeks", "")} weeks. Make sessions realistic an
     return NextResponse.json({ error: "Failed to parse program", raw: text }, { status: 500 })
   }
 
-  const { data: savedProgram } = await supabase
+  const { data: savedProgram, error: insertError } = await supabase
     .from("programs")
     .insert({
       user_strava_id: stravaId,
