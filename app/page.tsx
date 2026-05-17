@@ -220,6 +220,9 @@ useEffect(() => {
             <div style={styles.stravaConnected}>
               ✅ Strava connected · Auto-syncing
             </div>
+            <div style={{...styles.stravaConnected, background: '#1e1830', color: '#e8d5ff', cursor: 'pointer', marginBottom: 12}} onClick={() => window.location.href = '/character'}>
+  ⚔ View Character & Medals
+</div>
             <div style={styles.idCard}>
               <div style={styles.idLabel}>Your Strava ID (share with partner)</div>
               <div style={styles.idValue}>{user.strava_id}</div>

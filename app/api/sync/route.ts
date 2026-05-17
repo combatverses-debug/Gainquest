@@ -5,7 +5,7 @@ import { cookies } from "next/headers"
 
 export async function POST() {
   const cookieStore = await cookies()
-const stravaId = cookieStore.get("strava_id")?.value
+  const stravaId = cookieStore.get("strava_id")?.value
 
   if (!stravaId) return NextResponse.json({ error: "Not logged in" }, { status: 401 })
 
@@ -39,7 +39,7 @@ const stravaId = cookieStore.get("strava_id")?.value
   }
 
   const activitiesRes = await fetch(
-    "https://www.strava.com/api/v3/athlete/activities?per_page=10",
+    "https://www.strava.com/api/v3/athlete/activities?per_page=30",
     { headers: { Authorization: `Bearer ${accessToken}` } }
   )
   const activities = await activitiesRes.json()
@@ -57,7 +57,12 @@ const stravaId = cookieStore.get("strava_id")?.value
       .single()
 
     if (!existing) {
-      const { xp, str, endStat, pwr } = calculateXP(act.type, act.distance, act.moving_time)
+      const { xp, str, endStat, pwr } = calculateXP(
+        act.type,
+        act.distance,
+        act.moving_time,
+        act.calories
+      )
       await supabase.from("activities").insert({
         strava_id: act.id,
         user_strava_id: stravaId,
@@ -65,6 +70,7 @@ const stravaId = cookieStore.get("strava_id")?.value
         type: act.type,
         distance: act.distance,
         duration: act.moving_time,
+        calories: act.calories || 0,
         xp_earned: xp,
         date: act.start_date,
       })
