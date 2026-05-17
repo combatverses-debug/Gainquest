@@ -195,7 +195,6 @@ const s: { [k: string]: React.CSSProperties } = {
   charHeader: { textAlign: "center", marginBottom: 14 },
   charName: { fontSize: 20, fontWeight: 600, color: "#e8d5ff" },
   charTitle: { fontSize: 13, color: "#F5C475", marginTop: 2 },
-  topMedals: { display: "flex", justifyContent: "center", gap: 8, marginTop
     topMedals: { display: "flex", justifyContent: "center", gap: 8, marginTop: 8 },
   topMedalBadge: { fontSize: 20, background: "#1e1830", border: "1px solid #2a2040", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" },
   charStage: { background: "#12101a", borderRadius: 16, border: "1px solid #2a2040", padding: 14, marginBottom: 14, position: "relative" },
