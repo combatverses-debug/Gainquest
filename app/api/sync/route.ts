@@ -63,23 +63,29 @@ export async function POST() {
         act.moving_time,
         act.calories
       )
-    await supabase.from("activities").insert({
-  strava_id: act.id,
-  user_strava_id: stravaId,
-  name: act.name,
-  type: act.type,
-  distance: act.distance,
-  duration: act.moving_time,
-  calories: act.calories || 0,
-  avg_speed: act.average_speed || 0,
-  avg_heartrate: act.average_heartrate || 0,
-  max_heartrate: act.max_heartrate || 0,
-  elevation_gain: act.total_elevation_gain || 0,
-  suffer_score: act.suffer_score || 0,
-  relative_effort: act.relative_effort || 0,
-  xp_earned: xp,
-  date: act.start_date,
-})
+      await supabase.from("activities").insert({
+        strava_id: act.id,
+        user_strava_id: stravaId,
+        name: act.name,
+        type: act.type,
+        distance: act.distance,
+        duration: act.moving_time,
+        calories: act.calories || 0,
+        avg_speed: act.average_speed || 0,
+        avg_heartrate: act.average_heartrate || 0,
+        max_heartrate: act.max_heartrate || 0,
+        elevation_gain: act.total_elevation_gain || 0,
+        suffer_score: act.suffer_score || 0,
+        relative_effort: act.relative_effort || 0,
+        xp_earned: xp,
+        date: act.start_date,
+      })
+      totalXP += xp
+      totalStr += str
+      totalEnd += endStat
+      totalPwr += pwr
+    }
+  }
 
   const newLevel = xpToLevel(totalXP)
   await supabase.from("users").update({
