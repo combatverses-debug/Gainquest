@@ -57,11 +57,17 @@ export async function POST() {
       .single()
 
     if (!existing) {
+      const detailRes = await fetch(
+        `https://www.strava.com/api/v3/activities/${act.id}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
+      const detail = await detailRes.json()
+
       const { xp, str, endStat, pwr } = calculateXP(
         act.type,
         act.distance,
         act.moving_time,
-        act.calories
+        detail.calories
       )
       await supabase.from("activities").insert({
         strava_id: act.id,
@@ -70,7 +76,7 @@ export async function POST() {
         type: act.type,
         distance: act.distance,
         duration: act.moving_time,
-        calories: act.calories || 0,
+        calories: detail.calories || 0,
         avg_speed: act.average_speed || 0,
         avg_heartrate: act.average_heartrate || 0,
         max_heartrate: act.max_heartrate || 0,
