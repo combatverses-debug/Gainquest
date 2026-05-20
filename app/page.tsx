@@ -64,7 +64,7 @@ export default function Home() {
 
   if (loading) return (
     <div style={s.center}>
-      <img src="/icon-512.png" style={{ height: 80, objectFit: "contain", marginBottom: 20 }} alt="Gainquest" />
+      <img src="/icon-512.png" style={{ height: 120, objectFit: "contain", marginBottom: 20 }} alt="Gainquest" />
       <div style={s.loadText}>Entering the realm...</div>
     </div>
   )
@@ -72,7 +72,7 @@ export default function Home() {
   if (!userData?.user) return (
     <div style={s.center}>
       <div style={s.loginCard}>
-        <img src="/icon-512.png" style={{ height: 90, objectFit: "contain", marginBottom: 16 }} alt="Gainquest" />
+        <img src="/icon-512.png" style={{ height: 140, objectFit: "contain", marginBottom: 16 }} alt="Gainquest" />
         <div style={s.tagline}>Turn your workouts into legend</div>
         <a href="/api/auth/strava" style={{ ...s.stravaBtn, display: "block", textDecoration: "none", textAlign: "center" }}>
           Connect with Strava
@@ -167,7 +167,7 @@ export default function Home() {
             <div style={s.topBar}>
               <div>
                 <div style={s.realm}>The Ironveil Realm</div>
-                <img src="/icon-512.png" style={{ height: 32, objectFit: "contain" }} alt="Gainquest" />
+                <img src="/icon-512.png" style={{ height: 44, objectFit: "contain" }} alt="Gainquest" />
               </div>
               <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
                 {syncing ? "Syncing..." : "Sync Strava"}
