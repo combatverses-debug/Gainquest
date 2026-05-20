@@ -166,7 +166,7 @@ export default function Home() {
           <div>
             <div style={{ textAlign: "center", padding: "16px 16px 0", borderBottom: "1px solid #1a1230" }}>
   <div style={{ fontSize: 10, color: "#4a3d6b", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 8 }}>The Ironveil Realm</div>
-  <img src="/icon-512.png" style={{ height: 100, objectFit: "contain", marginBottom: 10 }} alt="Gainquest" />
+  <img src="/Gainquest-trans-logo.png" style={{ height: 100, objectFit: "contain", marginBottom: 10 }} alt="Gainquest" />
   <div style={{ paddingBottom: 12 }}>
     <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
       {syncing ? "Syncing..." : "Sync Strava"}
