@@ -152,13 +152,14 @@ export default function Home() {
             </div>
           </div>
 
-          
-            href={`https://www.strava.com/activities/${act.strava_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={s.stravaLink}
-          >
-            View on Strava ↗
+          href={`https://www.strava.com/activities/${act.strava_id}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  style={s.stravaLink}
+  aria-label="View on Strava"
+>
+  {"View on Strava ↗"}
+</a>
           </a>
         </div>
       </div>
