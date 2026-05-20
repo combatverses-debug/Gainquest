@@ -167,7 +167,7 @@ export default function Home() {
             <div style={s.topBar}>
               <div>
                 <div style={s.realm}>The Ironveil Realm</div>
-                <img src="/Gainquest_Logo.png" style={{ height: 32, objectFit: "contain" }} alt="Gainquest" />
+                <img src="/icon-512.png" style={{ height: 32, objectFit: "contain" }} alt="Gainquest" />
               </div>
               <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
                 {syncing ? "Syncing..." : "Sync Strava"}
