@@ -5,16 +5,16 @@ export default function Home() {
   const [userData, setUserData] = useState<any>(null)
   const [syncing, setSyncing] = useState(false)
   const [tab, setTab] = useState("home")
-  const [partnerInput, setPartnerInput] = useState("")
-  const [linking, setLinking] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [selectedActivity, setSelectedActivity] = useState<any>(null)
 
-useEffect(() => {
+  useEffect(() => {
     fetchData()
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
     }
   }, [])
+
   async function fetchData() {
     setLoading(true)
     const res = await fetch("/api/me")
@@ -32,20 +32,6 @@ useEffect(() => {
     setSyncing(false)
   }
 
-  async function linkPartner() {
-    setLinking(true)
-    await fetch("/api/link-partner", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        stravaId: userData?.user?.strava_id,
-        partnerStravaId: parseInt(partnerInput),
-      }),
-    })
-    await fetchData()
-    setLinking(false)
-  }
-
   const xpForNext = (level: number) => Math.pow(level, 2) * 100
   const xpProgress = (user: any) => {
     const prev = Math.pow(user.level - 1, 2) * 100
@@ -53,18 +39,42 @@ useEffect(() => {
     return Math.round(((user.xp - prev) / (next - prev)) * 100)
   }
 
+  const fmtPace = (speed: number) => {
+    if (!speed) return "—"
+    const minPerKm = 60 / (speed * 3.6)
+    const mins = Math.floor(minPerKm)
+    const secs = Math.round((minPerKm - mins) * 60)
+    return `${mins}:${secs.toString().padStart(2, "0")}/km`
+  }
+
+  const fmtTime = (secs: number) => {
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60
+    if (h > 0) return `${h}h ${m}m`
+    return `${m}m ${s}s`
+  }
+
+  const activityIcon = (type: string) => {
+    if (type === "Run") return "🏃"
+    if (type === "Walk") return "🚶"
+    if (type === "WeightTraining" || type === "Workout") return "🏋️"
+    return "⚡"
+  }
+
   if (loading) return (
-    <div style={styles.center}>
-      <div style={styles.loadText}>⚔ Loading Gainquest...</div>
+    <div style={s.center}>
+      <img src="/Gainquest_Logo.png" style={{ height: 80, objectFit: "contain", marginBottom: 20 }} alt="Gainquest" />
+      <div style={s.loadText}>Entering the realm...</div>
     </div>
   )
 
   if (!userData?.user) return (
-    <div style={styles.center}>
-      <div style={styles.loginCard}>
-        <div style={styles.logo}>⚔ Gainquest</div>
-        <div style={styles.tagline}>Turn your workouts into legend</div>
-        <a href="/api/auth/strava" style={{...styles.stravaBtn, display: "block", textDecoration: "none", textAlign: "center"}}>
+    <div style={s.center}>
+      <div style={s.loginCard}>
+        <img src="/Gainquest_Logo.png" style={{ height: 90, objectFit: "contain", marginBottom: 16 }} alt="Gainquest" />
+        <div style={s.tagline}>Turn your workouts into legend</div>
+        <a href="/api/auth/strava" style={{ ...s.stravaBtn, display: "block", textDecoration: "none", textAlign: "center" }}>
           Connect with Strava
         </a>
       </div>
@@ -72,7 +82,6 @@ useEffect(() => {
   )
 
   const user = userData?.user
-  const partner = userData?.partner
   const activities = userData?.activities || []
 
   const weekStart = new Date()
@@ -81,143 +90,200 @@ useEffect(() => {
     .filter((a: any) => new Date(a.date) >= weekStart)
     .reduce((sum: number, a: any) => sum + a.xp_earned, 0)
 
-  return (
-    <div style={styles.app}>
-      <div style={styles.content}>
+  if (selectedActivity) {
+    const act = selectedActivity
+    return (
+      <div style={s.app}>
+        <div style={s.battleHeader}>
+          <button style={s.backBtn2} onClick={() => setSelectedActivity(null)}>← Back</button>
+          <div style={s.battleHeaderTitle}>Battle Record</div>
+          <div />
+        </div>
 
-        {tab === "home" && user && (
+        <div style={{ padding: "16px" }}>
+          <div style={s.battleHero}>
+            <div style={s.cornerTL} /><div style={s.cornerTR} /><div style={s.cornerBL} /><div style={s.cornerBR} />
+            <div style={{ fontSize: 40, marginBottom: 10 }}>{activityIcon(act.type)}</div>
+            <div style={s.battleName}>{act.name}</div>
+            <div style={s.battleDate}>{new Date(act.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</div>
+            <div style={s.battleXPBig}>+{act.xp_earned} XP earned</div>
+          </div>
+
+          <div style={s.divider}>
+            <div style={s.dividerLine} />
+            <div style={s.dividerDiamond} />
+            <div style={s.dividerText}>Battle Stats</div>
+            <div style={s.dividerDiamond} />
+            <div style={{ ...s.dividerLine, background: "linear-gradient(90deg,#2a1f45,transparent)" }} />
+          </div>
+
+          <div style={s.statsGrid}>
+            <div style={s.statBig}>
+              <div style={s.statBigVal}>{act.distance ? `${(act.distance / 1000).toFixed(2)}km` : "—"}</div>
+              <div style={s.statBigLbl}>Distance</div>
+            </div>
+            <div style={s.statBig}>
+              <div style={s.statBigVal}>{fmtTime(act.duration)}</div>
+              <div style={s.statBigLbl}>Duration</div>
+            </div>
+            <div style={s.statBig}>
+              <div style={{ ...s.statBigVal, color: "#9B7FE8" }}>{fmtPace(act.avg_speed || 0)}</div>
+              <div style={s.statBigLbl}>Avg pace</div>
+            </div>
+            <div style={s.statBig}>
+              <div style={{ ...s.statBigVal, color: "#F5C475" }}>{act.calories || "—"}</div>
+              <div style={s.statBigLbl}>Calories</div>
+            </div>
+            <div style={s.statBig}>
+              <div style={{ ...s.statBigVal, color: "#E24B4A" }}>{act.avg_heartrate ? `${Math.round(act.avg_heartrate)} bpm` : "—"}</div>
+              <div style={s.statBigLbl}>Avg heart rate</div>
+            </div>
+            <div style={s.statBig}>
+              <div style={{ ...s.statBigVal, color: "#E24B4A" }}>{act.max_heartrate ? `${Math.round(act.max_heartrate)} bpm` : "—"}</div>
+              <div style={s.statBigLbl}>Max heart rate</div>
+            </div>
+            <div style={s.statBig}>
+              <div style={{ ...s.statBigVal, color: "#4ECBA5" }}>{act.elevation_gain ? `${Math.round(act.elevation_gain)}m` : "—"}</div>
+              <div style={s.statBigLbl}>Elevation gain</div>
+            </div>
+            <div style={s.statBig}>
+              <div style={{ ...s.statBigVal, color: "#D85A30" }}>{act.suffer_score || act.relative_effort || "—"}</div>
+              <div style={s.statBigLbl}>Suffer score</div>
+            </div>
+          </div>
+
+          
+            href={`https://www.strava.com/activities/${act.strava_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={s.stravaLink}
+          >
+            View on Strava ↗
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={s.app}>
+      <div style={s.content}>
+
+        {tab === "home" && (
           <div>
-            <div style={styles.header}>
-              <span style={styles.headerTitle}>⚔ Gainquest</span>
-              <button style={styles.syncBtn} onClick={syncActivities} disabled={syncing}>
+            <div style={s.topBar}>
+              <div>
+                <div style={s.realm}>The Ironveil Realm</div>
+                <img src="/Gainquest_Logo.png" style={{ height: 32, objectFit: "contain" }} alt="Gainquest" />
+              </div>
+              <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
                 {syncing ? "Syncing..." : "Sync Strava"}
               </button>
             </div>
-<div style={{...styles.heroCard, marginTop: 0, marginBottom: 12, cursor: 'pointer', background: '#12101a'}} onClick={() => window.location.href = '/readiness'}>
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-    <div>
-      <div style={{fontSize: 14, fontWeight: 600, color: '#e8d5ff'}}>⚔ Battle Readiness</div>
-      <div style={{fontSize: 11, color: '#6b5a8a', marginTop: 2}}>Check your training load & XP bonus</div>
-    </div>
-    <div style={{fontSize: 20}}>→</div>
-  </div>
-</div>
-<div style={{...styles.heroCard, marginTop: 0, marginBottom: 12, cursor: 'pointer', background: '#12101a'}} onClick={() => window.location.href = '/program'}>
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-    <div>
-      <div style={{fontSize: 14, fontWeight: 600, color: '#e8d5ff'}}>🔮 Oracle Training Program</div>
-      <div style={{fontSize: 11, color: '#6b5a8a', marginTop: 2}}>AI personalised campaign based on your data</div>
-    </div>
-    <div style={{fontSize: 20}}>→</div>
-  </div>
-</div>
-            {partner && (
-              <div style={styles.vsCard}>
-                <div style={styles.vsPlayer}>
-                  <div style={styles.vsEmoji}>{user.avatar || "🧙"}</div>
-                  <div style={styles.vsLevel}>Lvl {user.level}</div>
-                  <div style={styles.vsName}>You</div>
-                  <div style={{...styles.vsXP, color: "#7F77DD"}}>{myWeekXP} XP</div>
-                </div>
-                <div style={styles.vsMiddle}>
-                  <div style={styles.vsWeek}>this week</div>
-                  <div style={styles.vsVS}>VS</div>
-                  {myWeekXP > (partner.weekly_xp || 0)
-                    ? <div style={styles.winning}>you are winning ⚔</div>
-                    : <div style={styles.losing}>she is ahead 🏹</div>
-                  }
-                </div>
-                <div style={styles.vsPlayer}>
-                  <div style={styles.vsEmoji}>{partner.avatar || "🏹"}</div>
-                  <div style={styles.vsLevel}>Lvl {partner.level}</div>
-                  <div style={styles.vsName}>Her</div>
-                  <div style={{...styles.vsXP, color: "#D85A30"}}>{partner.xp} XP</div>
-                </div>
-              </div>
-            )}
 
-            <div style={styles.heroCard}>
-              <div style={styles.heroTop}>
-                <div style={styles.avatarYou}>{user.avatar || "🧙"}</div>
-                <div style={styles.heroInfo}>
-                  <div style={styles.heroName}>{user.character_name || user.name}</div>
-                  <div style={styles.heroClass}>Level {user.level} · {user.character_class} · {user.xp} XP</div>
-                  <div style={styles.xpBarWrap}>
-                    <div style={{...styles.xpBar, width: `${xpProgress(user)}%`, background: "#7F77DD"}} />
+            <div style={s.heroCard}>
+              <div style={s.cornerTL} /><div style={s.cornerTR} /><div style={s.cornerBL} /><div style={s.cornerBR} />
+              <div style={s.heroTop}>
+                <div style={s.heroAvatar}>{user.avatar || "🧙"}</div>
+                <div style={s.heroInfo}>
+                  <div style={s.heroName}>{user.character_name || user.name}</div>
+                  <div style={s.heroClass}>Level {user.level} · {user.character_class} · {user.xp} XP</div>
+                  <div style={s.xpBarWrap}>
+                    <div style={{ ...s.xpBarFill, width: `${xpProgress(user)}%` }} />
                   </div>
-                  <div style={styles.xpLabel}>
+                  <div style={s.xpLabel}>
                     <span>{user.xp} XP</span>
-                    <span>{xpForNext(user.level)} to next level</span>
+                    <span>{xpForNext(user.level)} to level {user.level + 1}</span>
                   </div>
                 </div>
               </div>
-              <div style={styles.statRow}>
-                <div style={styles.statBox}>
-                  <div style={{...styles.statVal, color: "#534AB7"}}>{user.str}</div>
-                  <div style={styles.statLbl}>STR</div>
-                </div>
-                <div style={styles.statBox}>
-                  <div style={{...styles.statVal, color: "#0F6E56"}}>{user.end_stat}</div>
-                  <div style={styles.statLbl}>END</div>
-                </div>
-                <div style={styles.statBox}>
-                  <div style={{...styles.statVal, color: "#993C1D"}}>{user.pwr}</div>
-                  <div style={styles.statLbl}>PWR</div>
-                </div>
+              <div style={s.statRow}>
+                <div style={s.statPip}><div style={{ ...s.statVal, color: "#9B7FE8" }}>{user.str}</div><div style={s.statLbl}>STR</div></div>
+                <div style={s.statPip}><div style={{ ...s.statVal, color: "#4ECBA5" }}>{user.end_stat}</div><div style={s.statLbl}>END</div></div>
+                <div style={s.statPip}><div style={{ ...s.statVal, color: "#D85A30" }}>{user.pwr}</div><div style={s.statLbl}>PWR</div></div>
               </div>
             </div>
 
-            {partner && (
-              <div style={{...styles.heroCard, marginTop: 12}}>
-                <div style={styles.heroTop}>
-                  <div style={styles.avatarHer}>{partner.avatar || "🏹"}</div>
-                  <div style={styles.heroInfo}>
-                    <div style={styles.heroName}>{partner.character_name || partner.name}</div>
-                    <div style={styles.heroClass}>Level {partner.level} · {partner.character_class} · {partner.xp} XP</div>
-                    <div style={styles.xpBarWrap}>
-                      <div style={{...styles.xpBar, width: `${xpProgress(partner)}%`, background: "#D85A30"}} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <div style={s.divider}>
+              <div style={s.dividerLine} />
+              <div style={s.dividerDiamond} />
+              <div style={s.dividerText}>Quick Access</div>
+              <div style={s.dividerDiamond} />
+              <div style={{ ...s.dividerLine, background: "linear-gradient(90deg,#2a1f45,transparent)" }} />
+            </div>
 
-            {!partner && (
-              <div style={styles.linkCard}>
-                <div style={styles.linkTitle}>Link your partner</div>
-                <div style={styles.linkSub}>Ask her to sign in to Gainquest, then enter her Strava ID</div>
-                <input
-                  style={styles.input}
-                  placeholder="Her Strava ID"
-                  value={partnerInput}
-                  onChange={e => setPartnerInput(e.target.value)}
-                />
-                <button style={styles.linkBtn} onClick={linkPartner} disabled={linking}>
-                  {linking ? "Linking..." : "Link Partner"}
-                </button>
+            <div style={{ display: "flex", gap: 8, padding: "0 16px 14px" }}>
+              <div style={s.quickCard} onClick={() => window.location.href = "/character"}>
+                <div style={{ fontSize: 22, marginBottom: 6 }}>🧙</div>
+                <div style={s.quickTitle}>Character</div>
+                <div style={s.quickSub}>& Medals</div>
               </div>
-            )}
+              <div style={s.quickCard} onClick={() => window.location.href = "/readiness"}>
+                <div style={{ fontSize: 22, marginBottom: 6 }}>⚔</div>
+                <div style={s.quickTitle}>Battle</div>
+                <div style={s.quickSub}>Readiness</div>
+              </div>
+              <div style={s.quickCard} onClick={() => window.location.href = "/program"}>
+                <div style={{ fontSize: 22, marginBottom: 6 }}>🔮</div>
+                <div style={s.quickTitle}>Oracle</div>
+                <div style={s.quickSub}>Program</div>
+              </div>
+            </div>
+
+            <div style={s.divider}>
+              <div style={s.dividerLine} />
+              <div style={s.dividerDiamond} />
+              <div style={s.dividerText}>This Week</div>
+              <div style={s.dividerDiamond} />
+              <div style={{ ...s.dividerLine, background: "linear-gradient(90deg,#2a1f45,transparent)" }} />
+            </div>
+
+            <div style={{ padding: "0 16px 14px", display: "flex", gap: 8 }}>
+              <div style={s.weekStat}>
+                <div style={{ ...s.weekStatVal, color: "#9B7FE8" }}>{myWeekXP}</div>
+                <div style={s.weekStatLbl}>XP earned</div>
+              </div>
+              <div style={s.weekStat}>
+                <div style={{ ...s.weekStatVal, color: "#4ECBA5" }}>
+                  {activities.filter((a: any) => new Date(a.date) >= weekStart).length}
+                </div>
+                <div style={s.weekStatLbl}>Activities</div>
+              </div>
+              <div style={s.weekStat}>
+                <div style={{ ...s.weekStatVal, color: "#F5C475" }}>
+                  {Math.round(activities.filter((a: any) => new Date(a.date) >= weekStart && a.type === "Run").reduce((s: number, a: any) => s + (a.distance || 0), 0) / 1000 * 10) / 10}km
+                </div>
+                <div style={s.weekStatLbl}>Run this week</div>
+              </div>
+            </div>
           </div>
         )}
 
-        {tab === "feed" && (
+        {tab === "battles" && (
           <div>
-            <div style={styles.header}>
-              <span style={styles.headerTitle}>⚔ Recent Battles</span>
+            <div style={s.topBar}>
+              <div>
+                <div style={s.realm}>Chronicle of Deeds</div>
+                <div style={s.tabTitle}>Recent Battles</div>
+              </div>
             </div>
+            {activities.length === 0 && (
+              <div style={{ padding: 24, textAlign: "center", color: "#4a3d6b" }}>No battles yet — sync Strava to begin your chronicle</div>
+            )}
             {activities.map((act: any) => (
-              <div key={act.id} style={styles.activityItem}>
-                <div style={styles.activityIcon}>
-                  {act.type === "Run" ? "🏃" : act.type === "Walk" ? "🚶" : "🏋️"}
-                </div>
-                <div style={styles.activityInfo}>
-                  <div style={styles.activityName}>{act.name}</div>
-                  <div style={styles.activityMeta}>
+              <div key={act.id} style={s.activityRow} onClick={() => setSelectedActivity(act)}>
+                <div style={s.actIcon}>{activityIcon(act.type)}</div>
+                <div style={s.actInfo}>
+                  <div style={s.actName}>{act.name}</div>
+                  <div style={s.actMeta}>
                     {act.distance ? `${(act.distance / 1000).toFixed(1)}km · ` : ""}
-                    {Math.round(act.duration / 60)}min · {new Date(act.date).toLocaleDateString()}
+                    {fmtTime(act.duration)} · {new Date(act.date).toLocaleDateString("en-GB")}
                   </div>
                 </div>
-                <div style={styles.activityXP}>+{act.xp_earned} XP</div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={s.actXP}>+{act.xp_earned} XP</div>
+                  <div style={{ fontSize: 10, color: "#4a3d6b", marginTop: 2 }}>tap for stats</div>
+                </div>
               </div>
             ))}
           </div>
@@ -225,108 +291,123 @@ useEffect(() => {
 
         {tab === "profile" && user && (
           <div>
-            <div style={styles.header}>
-              <span style={styles.headerTitle}>⚔ Profile</span>
-              <a href="/api/auth/signout" style={{...styles.signOutBtn, textDecoration: "none", display: "inline-block"}}>Sign out</a>
+            <div style={s.topBar}>
+              <div>
+                <div style={s.realm}>Hall of the Chosen</div>
+                <div style={s.tabTitle}>Your Champion</div>
+              </div>
+              <button style={s.signOutBtn} onClick={() => window.location.href = "/api/auth/signout"}>Sign out</button>
             </div>
-            <div style={styles.profileCard}>
-              <div style={styles.profileAvatar}>{user.avatar || "🧙"}</div>
-              <div style={styles.profileName}>{user.character_name || user.name}</div>
-              <div style={styles.profileSub}>Level {user.level} · {user.xp} XP total</div>
-            </div>
-            <div style={styles.stravaConnected}>
-              ✅ Strava connected · Auto-syncing
-            </div>
-            <div style={{...styles.stravaConnected, background: '#1e1830', color: '#e8d5ff', cursor: 'pointer', marginBottom: 12}} onClick={() => window.location.href = '/character'}>
-  ⚔ View Character & Medals
-</div>
-            <div style={styles.idCard}>
-              <div style={styles.idLabel}>Your Strava ID (share with partner)</div>
-              <div style={styles.idValue}>{user.strava_id}</div>
+            <div style={{ padding: "0 16px" }}>
+              <div style={{ ...s.heroCard, textAlign: "center", padding: 24 }}>
+                <div style={s.cornerTL} /><div style={s.cornerTR} /><div style={s.cornerBL} /><div style={s.cornerBR} />
+                <div style={{ fontSize: 52, marginBottom: 10 }}>{user.avatar || "🧙"}</div>
+                <div style={{ fontSize: 18, fontWeight: 500, color: "#e8d5ff", marginBottom: 4 }}>{user.character_name || user.name}</div>
+                <div style={{ fontSize: 12, color: "#9B7FE8", marginBottom: 12 }}>Level {user.level} · {user.xp} XP total</div>
+                <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+                  <span style={s.tag}>{user.character_class}</span>
+                  <span style={s.tag}>Season III</span>
+                </div>
+              </div>
+
+              <div style={{ ...s.stravaConnected, marginTop: 12 }}>
+                ✅ Strava connected · Auto-syncing
+              </div>
+
+              <div style={s.idCard}>
+                <div style={s.idLabel}>Your Strava ID</div>
+                <div style={s.idValue}>{user.strava_id}</div>
+              </div>
             </div>
           </div>
         )}
 
       </div>
 
-      <div style={styles.nav}>
-        <button style={{...styles.navBtn, ...(tab === "home" ? styles.navActive : {})}} onClick={() => setTab("home")}>
-          <span style={styles.navIcon}>🏠</span>
-          <span style={styles.navLabel}>home</span>
+      <div style={s.nav}>
+        <button style={{ ...s.navBtn, ...(tab === "home" ? s.navActive : {}) }} onClick={() => setTab("home")}>
+          <span style={s.navIcon}>🏰</span>
+          <span style={s.navLabel}>realm</span>
         </button>
-        <button style={{...styles.navBtn, ...(tab === "feed" ? styles.navActive : {})}} onClick={() => setTab("feed")}>
-          <span style={styles.navIcon}>⚔</span>
-          <span style={styles.navLabel}>battles</span>
+        <button style={{ ...s.navBtn, ...(tab === "battles" ? s.navActive : {}) }} onClick={() => setTab("battles")}>
+          <span style={s.navIcon}>⚔</span>
+          <span style={s.navLabel}>battles</span>
         </button>
-        <button style={{...styles.navBtn, ...(tab === "profile" ? styles.navActive : {})}} onClick={() => setTab("profile")}>
-          <span style={styles.navIcon}>👤</span>
-          <span style={styles.navLabel}>profile</span>
+        <button style={{ ...s.navBtn, ...(tab === "profile" ? s.navActive : {}) }} onClick={() => setTab("profile")}>
+          <span style={s.navIcon}>👤</span>
+          <span style={s.navLabel}>champion</span>
         </button>
       </div>
     </div>
   )
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
-  app: { maxWidth: 430, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "system-ui, sans-serif", background: "#fff" },
+const s: { [k: string]: React.CSSProperties } = {
+  app: { maxWidth: 430, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "system-ui, sans-serif", background: "#0a0810" },
   content: { flex: 1, overflowY: "auto", paddingBottom: 70 },
-  center: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#f5f5f5" },
-  loadText: { fontSize: 20, color: "#534AB7" },
-  loginCard: { background: "#fff", borderRadius: 16, padding: 40, textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.1)" },
-  logo: { fontSize: 32, fontWeight: 600, color: "#534AB7", marginBottom: 8 },
-  tagline: { fontSize: 14, color: "#888", marginBottom: 24 },
+  center: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#0a0810" },
+  loadText: { fontSize: 16, color: "#9B7FE8" },
+  loginCard: { background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 16, padding: 40, textAlign: "center", margin: 20 },
+  tagline: { fontSize: 13, color: "#4a3d6b", marginBottom: 24 },
   stravaBtn: { background: "#FC4C02", color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontSize: 15, fontWeight: 500, cursor: "pointer", width: "100%" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderBottom: "0.5px solid #eee" },
-  headerTitle: { fontSize: 17, fontWeight: 600, color: "#534AB7" },
-  syncBtn: { background: "#534AB7", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
-  signOutBtn: { background: "none", color: "#999", border: "0.5px solid #ddd", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
-  vsCard: { margin: 12, background: "#f8f8f8", borderRadius: 12, padding: 14, display: "flex", alignItems: "center", justifyContent: "space-between", border: "0.5px solid #eee" },
-  vsPlayer: { textAlign: "center" },
-  vsEmoji: { fontSize: 28 },
-  vsLevel: { fontSize: 18, fontWeight: 600 },
-  vsName: { fontSize: 11, color: "#999" },
-  vsXP: { fontSize: 12, fontWeight: 500 },
-  vsMiddle: { textAlign: "center" },
-  vsWeek: { fontSize: 10, color: "#999", marginBottom: 4 },
-  vsVS: { fontSize: 18, fontWeight: 700, color: "#333" },
-  winning: { fontSize: 11, color: "#1D9E75", marginTop: 4 },
-  losing: { fontSize: 11, color: "#D85A30", marginTop: 4 },
-  heroCard: { margin: "12px 12px 0", background: "#f8f8f8", borderRadius: 12, padding: 14, border: "0.5px solid #eee" },
+  topBar: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px 10px", borderBottom: "1px solid #1a1230" },
+  realm: { fontSize: 10, color: "#4a3d6b", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 2 },
+  tabTitle: { fontSize: 18, fontWeight: 500, color: "#F5C475" },
+  syncBtn: { background: "#1a1230", color: "#9B7FE8", border: "1px solid #3d2d6b", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
+  signOutBtn: { background: "none", color: "#4a3d6b", border: "1px solid #2a1f45", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
+  heroCard: { margin: "14px 16px", background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 12, padding: 14, position: "relative" as const },
+  cornerTL: { position: "absolute" as const, top: 8, left: 8, width: 12, height: 12, borderTop: "1px solid #F5C475", borderLeft: "1px solid #F5C475" },
+  cornerTR: { position: "absolute" as const, top: 8, right: 8, width: 12, height: 12, borderTop: "1px solid #F5C475", borderRight: "1px solid #F5C475" },
+  cornerBL: { position: "absolute" as const, bottom: 8, left: 8, width: 12, height: 12, borderBottom: "1px solid #F5C475", borderLeft: "1px solid #F5C475" },
+  cornerBR: { position: "absolute" as const, bottom: 8, right: 8, width: 12, height: 12, borderBottom: "1px solid #F5C475", borderRight: "1px solid #F5C475" },
   heroTop: { display: "flex", gap: 12, marginBottom: 12 },
-  avatarYou: { width: 52, height: 52, borderRadius: "50%", background: "#EEEDFE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 },
-  avatarHer: { width: 52, height: 52, borderRadius: "50%", background: "#FAECE7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 },
+  heroAvatar: { width: 54, height: 54, borderRadius: "50%", background: "#1a1230", border: "2px solid #7B5CF0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 },
   heroInfo: { flex: 1 },
-  heroName: { fontSize: 14, fontWeight: 600, color: "#333" },
-  heroClass: { fontSize: 11, color: "#999", marginBottom: 6 },
-  xpBarWrap: { background: "#e5e5e5", borderRadius: 20, height: 6, overflow: "hidden" },
-  xpBar: { height: "100%", borderRadius: 20, transition: "width 0.6s ease" },
-  xpLabel: { display: "flex", justifyContent: "space-between", fontSize: 10, color: "#999", marginTop: 4 },
+  heroName: { fontSize: 15, fontWeight: 500, color: "#e8d5ff" },
+  heroClass: { fontSize: 11, color: "#4a3d6b", marginBottom: 6 },
+  xpBarWrap: { background: "#1a1230", borderRadius: 20, height: 6, overflow: "hidden", border: "1px solid #2a1f45" },
+  xpBarFill: { height: "100%", borderRadius: 20, background: "linear-gradient(90deg, #534AB7, #9B7FE8)", transition: "width 0.6s ease" },
+  xpLabel: { display: "flex", justifyContent: "space-between", fontSize: 10, color: "#4a3d6b", marginTop: 4 },
   statRow: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 },
-  statBox: { background: "#fff", borderRadius: 8, padding: 8, textAlign: "center", border: "0.5px solid #eee" },
-  statVal: { fontSize: 18, fontWeight: 600 },
-  statLbl: { fontSize: 10, color: "#999", marginTop: 2 },
-  linkCard: { margin: 12, background: "#f8f8f8", borderRadius: 12, padding: 16, border: "0.5px solid #eee" },
-  linkTitle: { fontSize: 14, fontWeight: 600, color: "#333", marginBottom: 4 },
-  linkSub: { fontSize: 12, color: "#999", marginBottom: 12 },
-  input: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "0.5px solid #ddd", fontSize: 14, marginBottom: 10, boxSizing: "border-box" as const },
-  linkBtn: { background: "#534AB7", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, cursor: "pointer", width: "100%" },
-  activityItem: { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "0.5px solid #f0f0f0" },
-  activityIcon: { width: 38, height: 38, borderRadius: 8, background: "#EEEDFE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 },
-  activityInfo: { flex: 1 },
-  activityName: { fontSize: 13, fontWeight: 500, color: "#333" },
-  activityMeta: { fontSize: 11, color: "#999", marginTop: 2 },
-  activityXP: { fontSize: 12, fontWeight: 600, color: "#534AB7" },
-  profileCard: { margin: 16, background: "#EEEDFE", borderRadius: 12, padding: 24, textAlign: "center" },
-  profileAvatar: { fontSize: 48, marginBottom: 8 },
-  profileName: { fontSize: 18, fontWeight: 600, color: "#534AB7" },
-  profileSub: { fontSize: 12, color: "#7F77DD", marginTop: 4 },
-  stravaConnected: { margin: "0 16px 12px", fontSize: 13, color: "#1D9E75", background: "#E1F5EE", padding: "10px 14px", borderRadius: 8 },
-  idCard: { margin: "0 16px", background: "#f8f8f8", borderRadius: 8, padding: 14, border: "0.5px solid #eee" },
-  idLabel: { fontSize: 11, color: "#999", marginBottom: 4 },
-  idValue: { fontSize: 18, fontWeight: 700, color: "#333", letterSpacing: 1 },
-  nav: { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, display: "flex", justifyContent: "space-around", borderTop: "0.5px solid #eee", background: "#fff", padding: "8px 0 12px" },
-  navBtn: { background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", padding: "4px 20px", borderRadius: 8, color: "#999" },
-  navActive: { color: "#534AB7" },
+  statPip: { background: "#120d20", border: "1px solid #2a1f45", borderRadius: 8, padding: 8, textAlign: "center" },
+  statVal: { fontSize: 18, fontWeight: 500 },
+  statLbl: { fontSize: 9, color: "#4a3d6b", marginTop: 2, textTransform: "uppercase" as const, letterSpacing: "0.06em" },
+  divider: { display: "flex", alignItems: "center", gap: 8, margin: "12px 16px" },
+  dividerLine: { flex: 1, height: 1, background: "linear-gradient(90deg, transparent, #2a1f45)" },
+  dividerDiamond: { width: 6, height: 6, background: "#F5C475", transform: "rotate(45deg)", flexShrink: 0 },
+  dividerText: { fontSize: 10, color: "#F5C475", letterSpacing: "0.12em", textTransform: "uppercase" as const, flexShrink: 0 },
+  quickCard: { flex: 1, background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 10, padding: "12px 8px", textAlign: "center", cursor: "pointer" },
+  quickTitle: { fontSize: 12, fontWeight: 500, color: "#e8d5ff" },
+  quickSub: { fontSize: 10, color: "#4a3d6b", marginTop: 2 },
+  weekStat: { flex: 1, background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 10, padding: 12, textAlign: "center" },
+  weekStatVal: { fontSize: 18, fontWeight: 500 },
+  weekStatLbl: { fontSize: 10, color: "#4a3d6b", marginTop: 2 },
+  activityRow: { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "1px solid #150f22", cursor: "pointer" },
+  actIcon: { width: 40, height: 40, borderRadius: 8, background: "#1a1230", border: "1px solid #3d2d6b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 },
+  actInfo: { flex: 1 },
+  actName: { fontSize: 13, fontWeight: 500, color: "#e8d5ff" },
+  actMeta: { fontSize: 11, color: "#4a3d6b", marginTop: 2 },
+  actXP: { fontSize: 13, fontWeight: 500, color: "#9B7FE8" },
+  battleHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderBottom: "1px solid #1a1230", background: "#080612" },
+  battleHeaderTitle: { fontSize: 16, fontWeight: 500, color: "#F5C475" },
+  backBtn2: { background: "none", border: "none", color: "#9B7FE8", fontSize: 14, cursor: "pointer" },
+  battleHero: { background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 12, padding: 24, textAlign: "center", marginBottom: 16, position: "relative" as const },
+  battleName: { fontSize: 18, fontWeight: 500, color: "#e8d5ff", marginBottom: 6 },
+  battleDate: { fontSize: 12, color: "#4a3d6b", marginBottom: 10 },
+  battleXPBig: { fontSize: 20, fontWeight: 500, color: "#9B7FE8" },
+  statsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 },
+  statBig: { background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 10, padding: 14, textAlign: "center" },
+  statBigVal: { fontSize: 20, fontWeight: 500, color: "#e8d5ff" },
+  statBigLbl: { fontSize: 10, color: "#4a3d6b", marginTop: 4, textTransform: "uppercase" as const, letterSpacing: "0.06em" },
+  stravaLink: { display: "block", textAlign: "center", padding: "12px", background: "#1a1230", border: "1px solid #3d2d6b", borderRadius: 8, color: "#FC4C02", fontSize: 14, textDecoration: "none" },
+  stravaConnected: { background: "#0e0b1a", border: "1px solid #1D9E75", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#4ECBA5", marginBottom: 10 },
+  idCard: { background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 8, padding: 14, marginBottom: 12 },
+  idLabel: { fontSize: 11, color: "#4a3d6b", marginBottom: 4 },
+  idValue: { fontSize: 18, fontWeight: 500, color: "#e8d5ff", letterSpacing: 1 },
+  tag: { fontSize: 11, background: "#1a1230", border: "1px solid #3d2d6b", color: "#9B7FE8", padding: "4px 10px", borderRadius: 20 },
+  nav: { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, display: "flex", justifyContent: "space-around", borderTop: "1px solid #1a1230", background: "#0a0810", padding: "8px 0 12px" },
+  navBtn: { background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", padding: "4px 20px", borderRadius: 8, color: "#4a3d6b" },
+  navActive: { color: "#F5C475" },
   navIcon: { fontSize: 22 },
-  navLabel: { fontSize: 10 },
+  navLabel: { fontSize: 10, letterSpacing: "0.05em" },
 }
