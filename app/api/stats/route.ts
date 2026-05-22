@@ -14,8 +14,9 @@ export async function GET() {
 
   if (!activities) return NextResponse.json({})
 
-  const totalRunKm = activities.filter(a => a.type === "Run").reduce((s, a) => s + (a.distance || 0) / 1000, 0)
-  const totalWalkKm = activities.filter(a => a.type === "Walk").reduce((s, a) => s + (a.distance || 0) / 1000, 0)
+const totalRunKm = activities.filter(a => a.type === "Run").reduce((s, a) => s + (a.distance || 0) / 1000, 0)
+const totalWalkKm = activities.filter(a => a.type === "Walk").reduce((s, a) => s + (a.distance || 0) / 1000, 0)
+const totalCycleKm = activities.filter(a => a.type === "Ride" || a.type === "VirtualRide").reduce((s, a) => s + (a.distance || 0) / 1000, 0)
   const gymSessions = activities.filter(a => a.type === "WeightTraining" || a.type === "Workout").length
   const totalCalories = activities.reduce((s, a) => s + (a.calories || 0), 0)
   const totalActivities = activities.length
@@ -39,7 +40,8 @@ export async function GET() {
   const { data: user } = await supabase.from("users").select("level").eq("strava_id", stravaId).single()
 
   return NextResponse.json({
-    totalRunKm: Math.round(totalRunKm),
+   totalRunKm: Math.round(totalRunKm),
+    totalCycleKm: Math.round(totalCycleKm),
     totalWalkKm: Math.round(totalWalkKm),
     gymSessions,
     totalCalories: Math.round(totalCalories),
