@@ -44,10 +44,10 @@ export async function POST() {
   )
   const activities = await activitiesRes.json()
 
-  let totalXP = user.xp
-  let totalStr = user.str
-  let totalEnd = user.end_stat
-  let totalPwr = user.pwr
+  let totalXP = 0
+  let totalStr = 0
+  let totalEnd = 0
+  let totalPwr = 0
 
   for (const act of activities) {
     const { data: existing } = await supabase
