@@ -222,6 +222,10 @@ export default function Home() {
                 <div style={s.quickSub}>Program</div>
               </div>
             </div>
+            <div style={s.quickCard} onClick={() => window.location.href = "/realms"}>
+  <div style={s.quickTitle}>Realms</div>
+  <div style={s.quickSub}>& Map</div>
+</div>
 
             <div style={s.divider}>
               <div style={s.dividerLine} />
@@ -231,7 +235,7 @@ export default function Home() {
               <div style={{ ...s.dividerLine, background: "linear-gradient(90deg,#2a1f45,transparent)" }} />
             </div>
 
-            <div style={{ padding: "0 16px 14px", display: "flex", gap: 8 }}>
+           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, padding: "0 16px 14px" }}>
               <div style={s.weekStat}>
                 <div style={{ ...s.weekStatVal, color: "#9B7FE8" }}>{myWeekXP}</div>
                 <div style={s.weekStatLbl}>XP earned</div>
