@@ -39,7 +39,7 @@ export async function POST() {
   }
 
   const activitiesRes = await fetch(
-    "https://www.strava.com/api/v3/athlete/activities?per_page=30",
+    `https://www.strava.com/api/v3/athlete/activities?per_page=200&page=1`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
   )
   const activities = await activitiesRes.json()
