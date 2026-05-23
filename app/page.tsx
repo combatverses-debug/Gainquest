@@ -64,7 +64,8 @@ export default function Home() {
 
   if (loading) return (
     <div style={s.center}>
-      <img src="/Gainquest-trans-logo.png" style={{ height: 120, objectFit: "contain", marginBottom: 20 }} alt="Gainquest" />
+     <img src="/Gainquest-trans-logo.png" style={{ height: 100, objectFit: "contain", marginBottom: 6 }} alt="Gainquest" />
+<img src="/powered-by-strava.png" style={{ height: 16, objectFit: "contain", marginBottom: 10, opacity: 0.7 }} alt="Powered by Strava" />
       <div style={s.loadText}>Entering the realm...</div>
     </div>
   )
@@ -76,11 +77,7 @@ export default function Home() {
         <div style={s.tagline}>Turn your workouts into legend</div>
         <a href="/api/auth/strava" style={{ ...s.stravaBtn, display: "block", textDecoration: "none", textAlign: "center" }}>
           Connect with Strava
-          <img 
-  src="/powered-by-strava.png" 
-  style={{ height: 24, objectFit: "contain", marginTop: 24, opacity: 0.8 }} 
-  alt="Powered by Strava" 
-/>
+          
         </a>
       </div>
     </div>
