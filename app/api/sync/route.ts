@@ -6,7 +6,6 @@ import { cookies } from "next/headers"
 export async function POST() {
   const cookieStore = await cookies()
   const stravaId = cookieStore.get("strava_id")?.value
-
   if (!stravaId) return NextResponse.json({ error: "Not logged in" }, { status: 401 })
 
   const { data: user } = await supabase
@@ -39,7 +38,7 @@ export async function POST() {
   }
 
   const activitiesRes = await fetch(
-    `https://www.strava.com/api/v3/athlete/activities?per_page=200&page=1`,
+    "https://www.strava.com/api/v3/athlete/activities?per_page=200&page=1",
     { headers: { Authorization: `Bearer ${accessToken}` } }
   )
   const activities = await activitiesRes.json()
@@ -52,7 +51,7 @@ export async function POST() {
   for (const act of activities) {
     const { data: existing } = await supabase
       .from("activities")
-      .select("id")
+      .select("id, xp_earned, str, end_stat, pwr")
       .eq("strava_id", act.id)
       .single()
 
@@ -62,13 +61,7 @@ export async function POST() {
         { headers: { Authorization: `Bearer ${accessToken}` } }
       )
       const detail = await detailRes.json()
-
-      const { xp, str, endStat, pwr } = calculateXP(
-        act.type,
-        act.distance,
-        act.moving_time,
-        detail.calories
-      )
+      const { xp, str, endStat, pwr } = calculateXP(act.type, act.distance, act.moving_time, detail.calories)
       await supabase.from("activities").insert({
         strava_id: act.id,
         user_strava_id: stravaId,
@@ -90,6 +83,12 @@ export async function POST() {
       totalStr += str
       totalEnd += endStat
       totalPwr += pwr
+    } else {
+      // Activity already exists — just add its stored values to totals
+      totalXP += existing.xp_earned || 0
+      totalStr += existing.str || 0
+      totalEnd += existing.end_stat || 0
+      totalPwr += existing.pwr || 0
     }
   }
 
