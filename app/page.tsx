@@ -173,7 +173,10 @@ export default function Home() {
    <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
   {syncing ? "Syncing..." : "Sync Strava"}
 </button>
-<img src="/powered-by-strava.png" style={{ height: 10, objectFit: "contain", opacity: 0.5, marginTop: 4 }} alt="Powered by Strava" />
+<img src="/powered-by-strava.png" style={{ height: 8, objectFit: "contain", opacity: 0.5, marginBottom: 4 }} alt="Powered by Strava" />
+<button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
+  {syncing ? "Syncing..." : "Sync Strava"}
+</button>
   </div>
 </div>
 
