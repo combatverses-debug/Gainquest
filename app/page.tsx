@@ -76,6 +76,11 @@ export default function Home() {
         <div style={s.tagline}>Turn your workouts into legend</div>
         <a href="/api/auth/strava" style={{ ...s.stravaBtn, display: "block", textDecoration: "none", textAlign: "center" }}>
           Connect with Strava
+          <img 
+  src="/powered-by-strava.png" 
+  style={{ height: 24, objectFit: "contain", marginTop: 24, opacity: 0.8 }} 
+  alt="Powered by Strava" 
+/>
         </a>
       </div>
     </div>
