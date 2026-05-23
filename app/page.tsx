@@ -221,6 +221,10 @@ export default function Home() {
                 <div style={s.quickTitle}>Oracle</div>
                 <div style={s.quickSub}>Program</div>
               </div>
+              <div style={s.quickCard} onClick={() => window.location.href = "/calendar"}>
+              <div style={s.quickTitle}>Calendar</div>
+               <div style={s.quickSub}>Training history</div>
+              </div>
             </div>
             <div style={s.quickCard} onClick={() => window.location.href = "/realms"}>
   <div style={s.quickTitle}>Realms</div>
