@@ -65,7 +65,7 @@ export default function Home() {
   if (loading) return (
     <div style={s.center}>
      <img src="/Gainquest-trans-logo.png" style={{ height: 100, objectFit: "contain", marginBottom: 6 }} alt="Gainquest" />
-<img src="/powered-by-strava.png" style={{ height: 16, objectFit: "contain", marginBottom: 10, opacity: 0.7 }} alt="Powered by Strava" />
+    <img src="/powered-by-strava.png" style={{ height: 10, objectFit: "contain", marginBottom: 10, opacity: 0.7 }} alt="Powered by Strava" />
       <div style={s.loadText}>Entering the realm...</div>
     </div>
   )
@@ -170,9 +170,10 @@ export default function Home() {
   <div style={{ fontSize: 10, color: "#4a3d6b", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 8 }}>The Ironveil Realm</div>
   <img src="/Gainquest-trans-logo.png" style={{ height: 100, objectFit: "contain", marginBottom: 10 }} alt="Gainquest" />
   <div style={{ paddingBottom: 12 }}>
-    <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
-      {syncing ? "Syncing..." : "Sync Strava"}
-    </button>
+   <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
+  {syncing ? "Syncing..." : "Sync Strava"}
+</button>
+<img src="/powered-by-strava.png" style={{ height: 10, objectFit: "contain", opacity: 0.5, marginTop: 4 }} alt="Powered by Strava" />
   </div>
 </div>
 
