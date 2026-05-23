@@ -171,12 +171,10 @@ export default function Home() {
   <img src="/Gainquest-trans-logo.png" style={{ height: 100, objectFit: "contain", marginBottom: 10 }} alt="Gainquest" />
   <div style={{ paddingBottom: 12 }}>
    <button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
+    <img src="/powered-by-strava.png" style={{ height: 10, objectFit: "contain", opacity: 0.5, marginTop: 4 }} alt="Powered by Strava" />
   {syncing ? "Syncing..." : "Sync Strava"}
 </button>
-<img src="/powered-by-strava.png" style={{ height: 8, objectFit: "contain", opacity: 0.5, marginBottom: 4 }} alt="Powered by Strava" />
-<button style={s.syncBtn} onClick={syncActivities} disabled={syncing}>
-  {syncing ? "Syncing..." : "Sync Strava"}
-</button>
+
   </div>
 </div>
 
