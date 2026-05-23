@@ -19,7 +19,7 @@ const stravaId = cookieStore.get("strava_id")?.value
     .select("*")
     .eq("user_strava_id", stravaId)
     .order("date", { ascending: false })
-    .limit(1000)
+    .limit(10000)
 
   let partner = null
   if (user?.partner_strava_id) {
