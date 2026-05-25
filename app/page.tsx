@@ -85,6 +85,15 @@ export default function Home() {
 
   const user = userData?.user
   const activities = userData?.activities || []
+  async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  const form = new FormData()
+  form.append('avatar', file)
+  const res = await fetch('/api/avatar', { method: 'POST', body: form })
+  const data = await res.json()
+  if (data.url) await fetchData()
+}
 
   const weekStart = new Date()
   weekStart.setDate(weekStart.getDate() - weekStart.getDay())
