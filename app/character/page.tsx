@@ -184,7 +184,7 @@ export default function CharacterPage() {
 }
 
 const s: { [k: string]: React.CSSProperties } = {
-  app: { maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#0a0a0f", fontFamily: "system-ui, sans-serif", paddingBottom: 80 },
+  app: { maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#0a0810", fontFamily: "system-ui, sans-serif", paddingBottom: 80, backgroundImage: "radial-gradient(ellipse at 20% 20%, rgba(123,92,240,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(245,196,117,0.04) 0%, transparent 50%)" },
   center: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#0a0a0f" },
   loading: { fontSize: 20, color: "#7F77DD" },
   tabRow: { display: "flex", borderBottom: "1px solid #1e1830", background: "#0a0a0f", position: "sticky", top: 0, zIndex: 10 },
@@ -197,7 +197,7 @@ const s: { [k: string]: React.CSSProperties } = {
   charTitle: { fontSize: 13, color: "#F5C475", marginTop: 2 },
     topMedals: { display: "flex", justifyContent: "center", gap: 8, marginTop: 8 },
   topMedalBadge: { fontSize: 20, background: "#1e1830", border: "1px solid #2a2040", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" },
-  charStage: { background: "#12101a", borderRadius: 16, border: "1px solid #2a2040", padding: 14, marginBottom: 14, position: "relative" },
+  charStage: { background: "#12101a", borderRadius: 16, border: "1px solid #2a2040", padding: 14, marginBottom: 14, position: "relative", boxShadow: "0 0 24px rgba(123,92,240,0.1), inset 0 1px 0 rgba(155,127,232,0.08)" },
   viewToggle: { display: "flex", gap: 8, justifyContent: "center", marginBottom: 12 },
   viewBtn: { background: "#1e1830", border: "1px solid #3a2d60", color: "#9980cc", fontSize: 12, padding: "5px 16px", borderRadius: 20, cursor: "pointer" },
   viewActive: { background: "#534AB7", borderColor: "#7F77DD", color: "#fff" },

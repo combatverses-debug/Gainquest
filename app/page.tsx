@@ -210,7 +210,7 @@ export default function Home() {
               <div style={{ ...s.dividerLine, background: "linear-gradient(90deg,#2a1f45,transparent)" }} />
             </div>
 
-            <div style={{ display: "flex", gap: 8, padding: "0 16px 14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "0 16px 14px" }}>
               <div style={s.quickCard} onClick={() => window.location.href = "/character"}>
                 <div style={{ fontSize: 22, marginBottom: 6 }}>🧙</div>
                 <div style={s.quickTitle}>Character</div>
@@ -221,16 +221,17 @@ export default function Home() {
                 <div style={s.quickTitle}>Battle</div>
                 <div style={s.quickSub}>Readiness</div>
               </div>
-              
               <div style={s.quickCard} onClick={() => window.location.href = "/calendar"}>
-              <div style={s.quickTitle}>Calendar</div>
-               <div style={s.quickSub}>Training history</div>
+                <div style={{ fontSize: 22, marginBottom: 6 }}>📅</div>
+                <div style={s.quickTitle}>Calendar</div>
+                <div style={s.quickSub}>Training history</div>
+              </div>
+              <div style={s.quickCard} onClick={() => window.location.href = "/realms"}>
+                <div style={{ fontSize: 22, marginBottom: 6 }}>🗺️</div>
+                <div style={s.quickTitle}>Realms</div>
+                <div style={s.quickSub}>& Map</div>
               </div>
             </div>
-            <div style={s.quickCard} onClick={() => window.location.href = "/realms"}>
-  <div style={s.quickTitle}>Realms</div>
-  <div style={s.quickSub}>& Map</div>
-</div>
 
             <div style={s.divider}>
               <div style={s.dividerLine} />
@@ -345,9 +346,9 @@ export default function Home() {
 }
 
 const s: { [k: string]: React.CSSProperties } = {
-  app: { maxWidth: 430, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "system-ui, sans-serif", background: "#0a0810" },
+  app: { maxWidth: 430, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "system-ui, sans-serif", background: "#0a0810", backgroundImage: "radial-gradient(ellipse at 20% 20%, rgba(123,92,240,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(245,196,117,0.04) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(155,127,232,0.03) 0%, transparent 70%)" },
   content: { flex: 1, overflowY: "auto", paddingBottom: 70 },
-  center: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#0a0810" },
+  center: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#0a0810", backgroundImage: "radial-gradient(ellipse at 20% 20%, rgba(123,92,240,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(245,196,117,0.04) 0%, transparent 50%)" },
   loadText: { fontSize: 16, color: "#9B7FE8" },
   loginCard: { background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 16, padding: 40, textAlign: "center", margin: 20 },
   tagline: { fontSize: 13, color: "#4a3d6b", marginBottom: 24 },
@@ -357,7 +358,7 @@ const s: { [k: string]: React.CSSProperties } = {
   tabTitle: { fontSize: 18, fontWeight: 500, color: "#F5C475" },
   syncBtn: { background: "#1a1230", color: "#9B7FE8", border: "1px solid #3d2d6b", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
   signOutBtn: { background: "none", color: "#4a3d6b", border: "1px solid #2a1f45", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
-  heroCard: { margin: "14px 16px", background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 12, padding: 14, position: "relative" as const },
+  heroCard: { margin: "14px 16px", background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 12, padding: 14, position: "relative" as const, boxShadow: "0 0 24px rgba(123,92,240,0.12), 0 0 48px rgba(123,92,240,0.06), inset 0 1px 0 rgba(155,127,232,0.1)" },
   cornerTL: { position: "absolute" as const, top: 8, left: 8, width: 12, height: 12, borderTop: "1px solid #F5C475", borderLeft: "1px solid #F5C475" },
   cornerTR: { position: "absolute" as const, top: 8, right: 8, width: 12, height: 12, borderTop: "1px solid #F5C475", borderRight: "1px solid #F5C475" },
   cornerBL: { position: "absolute" as const, bottom: 8, left: 8, width: 12, height: 12, borderBottom: "1px solid #F5C475", borderLeft: "1px solid #F5C475" },
@@ -368,7 +369,7 @@ const s: { [k: string]: React.CSSProperties } = {
   heroName: { fontSize: 15, fontWeight: 500, color: "#e8d5ff" },
   heroClass: { fontSize: 11, color: "#4a3d6b", marginBottom: 6 },
   xpBarWrap: { background: "#1a1230", borderRadius: 20, height: 6, overflow: "hidden", border: "1px solid #2a1f45" },
-  xpBarFill: { height: "100%", borderRadius: 20, background: "linear-gradient(90deg, #534AB7, #9B7FE8)", transition: "width 0.6s ease" },
+  xpBarFill: { height: "100%", borderRadius: 20, background: "linear-gradient(90deg, #534AB7, #9B7FE8, #534AB7)", backgroundSize: "200% 100%", transition: "width 0.6s ease", animation: "shimmer 2.5s infinite linear" },
   xpLabel: { display: "flex", justifyContent: "space-between", fontSize: 10, color: "#4a3d6b", marginTop: 4 },
   statRow: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 },
   statPip: { background: "#120d20", border: "1px solid #2a1f45", borderRadius: 8, padding: 8, textAlign: "center" },
