@@ -258,6 +258,12 @@ export default function Home() {
                 </div>
                 <div style={s.weekStatLbl}>Run this week</div>
               </div>
+              <div style={s.weekStat}>
+                <div style={{ ...s.weekStatVal, color: "#E24B4A" }}>
+                  {activities.filter((a: any) => new Date(a.date) >= weekStart).reduce((s: number, a: any) => s + (a.calories || 0), 0).toLocaleString()}
+                </div>
+                <div style={s.weekStatLbl}>Calories burned</div>
+              </div>
             </div>
           </div>
         )}
