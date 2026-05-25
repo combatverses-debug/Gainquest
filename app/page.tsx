@@ -210,7 +210,7 @@ export default function Home() {
               <div style={{ ...s.dividerLine, background: "linear-gradient(90deg,#2a1f45,transparent)" }} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "0 16px 14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, padding: "0 16px 8px" }}>
               <div style={s.quickCard} onClick={() => window.location.href = "/character"}>
                 <div style={{ fontSize: 22, marginBottom: 6 }}>🧙</div>
                 <div style={s.quickTitle}>Character</div>
@@ -241,7 +241,7 @@ export default function Home() {
               <div style={{ ...s.dividerLine, background: "linear-gradient(90deg,#2a1f45,transparent)" }} />
             </div>
 
-           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, padding: "0 16px 14px" }}>
+           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, padding: "0 16px 8px" }}>
               <div style={s.weekStat}>
                 <div style={{ ...s.weekStatVal, color: "#9B7FE8" }}>{myWeekXP}</div>
                 <div style={s.weekStatLbl}>XP earned</div>
@@ -358,7 +358,7 @@ const s: { [k: string]: React.CSSProperties } = {
   tabTitle: { fontSize: 18, fontWeight: 500, color: "#F5C475" },
   syncBtn: { background: "#1a1230", color: "#9B7FE8", border: "1px solid #3d2d6b", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
   signOutBtn: { background: "none", color: "#4a3d6b", border: "1px solid #2a1f45", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" },
-  heroCard: { margin: "14px 16px", background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 12, padding: 14, position: "relative" as const, boxShadow: "0 0 24px rgba(123,92,240,0.12), 0 0 48px rgba(123,92,240,0.06), inset 0 1px 0 rgba(155,127,232,0.1)" },
+  heroCard: { margin: "8px 16px", background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 12, padding: 12, position: "relative" as const, boxShadow: "0 0 24px rgba(123,92,240,0.12), 0 0 48px rgba(123,92,240,0.06), inset 0 1px 0 rgba(155,127,232,0.1)" },
   cornerTL: { position: "absolute" as const, top: 8, left: 8, width: 12, height: 12, borderTop: "1px solid #F5C475", borderLeft: "1px solid #F5C475" },
   cornerTR: { position: "absolute" as const, top: 8, right: 8, width: 12, height: 12, borderTop: "1px solid #F5C475", borderRight: "1px solid #F5C475" },
   cornerBL: { position: "absolute" as const, bottom: 8, left: 8, width: 12, height: 12, borderBottom: "1px solid #F5C475", borderLeft: "1px solid #F5C475" },
@@ -375,15 +375,15 @@ const s: { [k: string]: React.CSSProperties } = {
   statPip: { background: "#120d20", border: "1px solid #2a1f45", borderRadius: 8, padding: 8, textAlign: "center" },
   statVal: { fontSize: 18, fontWeight: 500 },
   statLbl: { fontSize: 9, color: "#4a3d6b", marginTop: 2, textTransform: "uppercase" as const, letterSpacing: "0.06em" },
-  divider: { display: "flex", alignItems: "center", gap: 8, margin: "12px 16px" },
+  divider: { display: "flex", alignItems: "center", gap: 8, margin: "6px 16px" },
   dividerLine: { flex: 1, height: 1, background: "linear-gradient(90deg, transparent, #2a1f45)" },
   dividerDiamond: { width: 6, height: 6, background: "#F5C475", transform: "rotate(45deg)", flexShrink: 0 },
   dividerText: { fontSize: 10, color: "#F5C475", letterSpacing: "0.12em", textTransform: "uppercase" as const, flexShrink: 0 },
-  quickCard: { flex: 1, background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 10, padding: "12px 8px", textAlign: "center", cursor: "pointer" },
+  quickCard: { flex: 1, background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 10, padding: "8px 8px", textAlign: "center", cursor: "pointer" },
   quickTitle: { fontSize: 12, fontWeight: 500, color: "#e8d5ff" },
   quickSub: { fontSize: 10, color: "#4a3d6b", marginTop: 2 },
-  weekStat: { flex: 1, background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 10, padding: 12, textAlign: "center" },
-  weekStatVal: { fontSize: 18, fontWeight: 500 },
+  weekStat: { flex: 1, background: "#0e0b1a", border: "1px solid #2a1f45", borderRadius: 10, padding: 8, textAlign: "center" },
+  weekStatVal: { fontSize: 15, fontWeight: 500 },
   weekStatLbl: { fontSize: 10, color: "#4a3d6b", marginTop: 2 },
   activityRow: { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "1px solid #150f22", cursor: "pointer" },
   actIcon: { width: 40, height: 40, borderRadius: 8, background: "#1a1230", border: "1px solid #3d2d6b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 },
