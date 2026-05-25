@@ -167,7 +167,7 @@ export default function Home() {
         {tab === "home" && (
           <div>
             <div style={{ textAlign: "center", padding: "16px 16px 0", borderBottom: "1px solid #1a1230" }}>
-  <div style={{ fontSize: 10, color: "#4a3d6b", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 8 }}>The Ironveil Realm</div>
+
   <img src="/Gainquest-trans-logo.png" style={{ height: 140, objectFit: "contain", marginBottom: 4 }} alt="Gainquest" />
 <div style={{ paddingBottom: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
     <img src="/powered-by-strava.png" style={{ height: 10, objectFit: "contain", opacity: 0.5, marginTop: 0 }} alt="Powered by Strava" />
