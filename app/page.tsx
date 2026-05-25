@@ -310,7 +310,16 @@ export default function Home() {
             <div style={{ padding: "0 16px" }}>
               <div style={{ ...s.heroCard, textAlign: "center", padding: 24 }}>
                 <div style={s.cornerTL} /><div style={s.cornerTR} /><div style={s.cornerBL} /><div style={s.cornerBR} />
-                <div style={{ fontSize: 52, marginBottom: 10 }}>{user.avatar || "🧙"}</div>
+                <div style={{ position: "relative", display: "inline-block", marginBottom: 10 }}>
+                {user.avatar_url
+                  ? <img src={user.avatar_url} style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", border: "2px solid #7B5CF0" }} alt="avatar" />
+                  : <div style={{ fontSize: 52 }}>{user.avatar || "🧙"}</div>
+                }
+                <label style={{ position: "absolute", bottom: 0, right: 0, background: "#534AB7", border: "none", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12 }}>
+                  📷
+                  <input type="file" accept="image/*" onChange={uploadAvatar} style={{ display: "none" }} />
+                </label>
+              </div>
                 <div style={{ fontSize: 18, fontWeight: 500, color: "#e8d5ff", marginBottom: 4 }}>{user.character_name || user.name}</div>
                 <div style={{ fontSize: 12, color: "#9B7FE8", marginBottom: 12 }}>Level {user.level} · {user.xp} XP total</div>
                 <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
