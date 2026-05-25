@@ -221,11 +221,7 @@ export default function Home() {
                 <div style={s.quickTitle}>Battle</div>
                 <div style={s.quickSub}>Readiness</div>
               </div>
-              <div style={s.quickCard} onClick={() => window.location.href = "/program"}>
-                <div style={{ fontSize: 22, marginBottom: 6 }}>🔮</div>
-                <div style={s.quickTitle}>Oracle</div>
-                <div style={s.quickSub}>Program</div>
-              </div>
+              
               <div style={s.quickCard} onClick={() => window.location.href = "/calendar"}>
               <div style={s.quickTitle}>Calendar</div>
                <div style={s.quickSub}>Training history</div>
