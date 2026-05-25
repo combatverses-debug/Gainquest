@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+//import "./gainquest-premium.css"
 
 export const metadata: Metadata = {
   title: "Gainquest",
